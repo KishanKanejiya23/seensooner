@@ -1,93 +1,76 @@
 @import "tailwindcss";
 
 /*
- * SeenSooner. A public-information tool, so the references are public
- * wayfinding rather than apps: hospital corridor signs, railway departure
- * boards, the take-a-number ticket. Calm paper, ink type, numbers that line up.
+ * SeenSooner, v2. Built like a real public-service website, after studying
+ * NHS trust sites (Sandwell and West Birmingham's live A&E page especially):
+ * utility bar, search-first header, photo banner with a titled panel,
+ * "You are here" breadcrumbs, a section sidebar with an emergency box,
+ * per-hospital wait blocks, a values strip and a heavy footer.
  *
- * Type: Atkinson Hyperlegible Next + Mono (Braille Institute). Chosen for the
- * reader, not the look: people checking a wait are often anxious, older, or
- * reading on a phone in a corridor. Mono is for every number so columns align.
- *
- * Colour: ink on warm paper. One interactive colour, "signal teal". Wait
- * lengths get their own quiet ramp (quick / middling / long) and always carry
- * a number and a bar length too, never colour alone. Emergency red is used
- * for the 999 strip and nothing else.
+ * It deliberately does NOT use NHS blue, Frutiger or the NHS logo: this is an
+ * independent site and must never be mistaken for an official one. Its own
+ * colours are "civic teal" with a saffron marker and a magenta emergency box.
  *
  * Scales (nothing outside them):
- *   space   4 8 12 16 24 32 48 64 96 128
- *   type    12 14 16 18 20 24 30 36 48 64 80
- *   radius  4 (inputs, buttons, chips) / 12 (panels) / 999 (pills, dots)
- *   shadow  --lift (search panel only)
+ *   space   4 8 12 16 24 32 48 64 96
+ *   type    14 16 18 20 24 30 36 48 56
+ *   radius  4 (buttons, inputs, panels) / 999 (search pill, dots)
  */
 :root {
-  --paper: #fbfaf6;
-  --paper-2: #f2efe7;      /* wells, alternate rows */
-  --card: #ffffff;
-  --ink: #15171c;          /* 17.6:1 on paper */
-  --ink-2: #464a54;        /* 8.6:1 secondary */
-  --ink-3: #5f6470;        /* 5.8:1 labels */
-  --line: #e4e0d6;         /* decorative hairlines */
-  --line-strong: #858a95;  /* input edges, 3.4:1 */
-  --act: #0d6b62;          /* signal teal: links, buttons, focus (6.3:1) */
-  --act-ink: #ffffff;
-  --act-soft: #e3f1ee;
-  --quick: #2f8a5b;        /* wait ramp, bars only */
-  --mid: #c98a1b;
-  --long: #b9502f;
-  --quick-ink: #1d6a42;    /* text versions of the ramp, 6.3:1 / 6.0:1 */
-  --long-ink: #9a3a1d;
-  --mid-ink: #845a0c;
-  --quick-soft: #e4f2ea;
-  --mid-soft: #f8eedb;
-  --long-soft: #f7e6df;
-  --sos: #b3261e;          /* 999 strip only (6.5:1 with white) */
+  --page: #ffffff;
+  --well: #eef3f2;          /* grey boxes, sidebar (like the trust sites' #F0F4F5) */
+  --well-2: #e2eae8;
+  --ink: #1b2524;           /* 15.7:1 on white */
+  --ink-2: #3c4948;         /* 8.4:1 on the well */
+  --ink-3: #566362;         /* 5.6:1 on the well */
+  --line: #d3dcda;
+  --line-strong: #74817f;   /* inputs, 4.0:1 */
+  --brand-950: #052b28;     /* footer */
+  --brand-900: #073b37;     /* banner panel, timestamp panel */
+  --brand-800: #0a4c46;
+  --brand-700: #0c5f57;     /* buttons (7.5:1 with white) */
+  --brand-600: #0e6f66;     /* links (6.0:1 on white, 5.4:1 on the well) */
+  --brand-100: #d7ebe7;
+  --brand-50: #ecf6f4;
+  --saffron: #f2b134;       /* marker bars, decorative only */
+  --ember: #e27a12;         /* hospital block underline, decorative only */
+  --utility: #2f3b3a;       /* top utility bar */
+  --sos: #a3195b;           /* emergency box (7.4:1 with white) */
+  --sos-dark: #7e1146;
+  --quick: #1f7a4a;
+  --mid: #b86e00;
+  --long: #b0381c;
+  --quick-ink: #17633b;
+  --mid-ink: #7f4c00;
+  --long-ink: #962e15;
+  --quick-soft: #e3f2e9;
+  --mid-soft: #fbefd9;
+  --long-soft: #f8e4dd;
   --live: #1f8a4c;
-  --lift: 0 24px 48px -24px rgb(21 23 28 / 0.28), 0 2px 6px rgb(21 23 28 / 0.06);
   color-scheme: light;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --paper: #121417;
-    --paper-2: #1a1d21;
-    --card: #181b1f;
-    --ink: #f1efea;
-    --ink-2: #c3c6cc;
-    --ink-3: #a3a8b1;
-    --line: #2a2e34;
-    --line-strong: #6f7580;
-    --act: #5fc4b6;
-    --act-ink: #0c1715;
-    --act-soft: #15302c;
-    --quick: #5fbf8a;
-    --mid: #e0ad4c;
-    --long: #e57e5c;
-    --quick-ink: #7fd3a4;
-    --long-ink: #f39b7d;
-    --mid-ink: #e8be6d;
-    --quick-soft: #16291f;
-    --mid-soft: #2e2615;
-    --long-soft: #33201a;
-    --sos: #c4332a;
-    --live: #4cc77f;
-    --lift: 0 24px 48px -24px rgb(0 0 0 / 0.8), 0 0 0 1px var(--line);
-    color-scheme: dark;
-  }
-}
-
 @theme inline {
-  --color-paper: var(--paper);
-  --color-paper-2: var(--paper-2);
-  --color-card: var(--card);
+  --color-page: var(--page);
+  --color-well: var(--well);
+  --color-well-2: var(--well-2);
   --color-ink: var(--ink);
   --color-ink-2: var(--ink-2);
   --color-ink-3: var(--ink-3);
   --color-line: var(--line);
   --color-line-strong: var(--line-strong);
-  --color-act: var(--act);
-  --color-act-ink: var(--act-ink);
-  --color-act-soft: var(--act-soft);
+  --color-brand-950: var(--brand-950);
+  --color-brand-900: var(--brand-900);
+  --color-brand-800: var(--brand-800);
+  --color-brand-700: var(--brand-700);
+  --color-brand-600: var(--brand-600);
+  --color-brand-100: var(--brand-100);
+  --color-brand-50: var(--brand-50);
+  --color-saffron: var(--saffron);
+  --color-ember: var(--ember);
+  --color-utility: var(--utility);
+  --color-sos: var(--sos);
+  --color-sos-dark: var(--sos-dark);
   --color-quick: var(--quick);
   --color-mid: var(--mid);
   --color-long: var(--long);
@@ -97,67 +80,79 @@
   --color-quick-soft: var(--quick-soft);
   --color-mid-soft: var(--mid-soft);
   --color-long-soft: var(--long-soft);
-  --color-sos: var(--sos);
   --color-live: var(--live);
-  --font-sans: var(--font-atkinson), -apple-system, "Segoe UI", Roboto, sans-serif;
-  --font-mono: var(--font-atkinson-mono), ui-monospace, "SF Mono", Menlo, monospace;
-  --shadow-lift: var(--lift);
+  --font-sans: var(--font-atkinson), "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
 
 html {
   -webkit-text-size-adjust: 100%;
+  scroll-behavior: smooth;
 }
 
 body {
   font-family: var(--font-sans);
-  background: var(--paper);
+  background: var(--page);
   color: var(--ink);
   font-size: 18px;
-  line-height: 1.55;
+  line-height: 1.6;
+}
+
+h1, h2, h3, h4 {
+  line-height: 1.25;
+  font-weight: 700;
+  text-wrap: balance;
+}
+
+p {
+  text-wrap: pretty;
 }
 
 :focus-visible {
-  outline: 3px solid var(--act);
+  outline: 3px solid var(--saffron);
   outline-offset: 2px;
-  border-radius: 4px;
+  box-shadow: 0 0 0 6px var(--ink);
+  border-radius: 2px;
 }
 
 ::selection {
-  background: var(--act-soft);
+  background: var(--saffron);
+  color: var(--ink);
 }
 
-/* Tracked capitals: kickers and column labels, read letter by letter. */
-.caps {
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--ink-3);
-}
-
+/* Numbers set in the body face with lining, tabular figures so columns align. */
 .num {
-  font-family: var(--font-mono);
-  font-variant-numeric: tabular-nums;
-  letter-spacing: -0.01em;
+  font-variant-numeric: tabular-nums lining-nums;
 }
 
-/* Body links: coloured and underlined (they sit inside running text). */
-.prose-link {
-  color: var(--act);
+/* Body links: coloured and underlined, thicker on hover (trust-site convention). */
+.link {
+  color: var(--brand-600);
   text-decoration: underline;
-  text-decoration-thickness: 2px;
+  text-decoration-thickness: 1px;
   text-underline-offset: 3px;
 }
-.prose-link:hover {
+.link:hover {
+  color: var(--brand-900);
   text-decoration-thickness: 3px;
 }
 
-/* The ticket-stub perforation, used on the logo and the result "tickets". */
-.perf {
-  background-image: radial-gradient(circle, var(--line-strong) 1.2px, transparent 1.4px);
-  background-size: 8px 8px;
-  background-repeat: repeat-y;
-  background-position: center;
+/* A saffron marker bar on the left of a panel, the site's signature accent. */
+.marker {
+  border-left: 6px solid var(--saffron);
+}
+
+/* Photo banner: the photo sits behind a teal wash so white text always passes. */
+.banner {
+  background-color: var(--brand-800);
+  position: relative;
+  isolation: isolate;
+}
+.banner::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(100deg, rgb(5 43 40 / 0.92) 0%, rgb(7 59 55 / 0.78) 38%, rgb(10 76 70 / 0.35) 75%, rgb(10 76 70 / 0.15) 100%);
 }
 
 details > summary {
@@ -171,11 +166,30 @@ details[open] .chev {
   transform: rotate(180deg);
 }
 
+@keyframes rise {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: none; }
+}
+.rise {
+  animation: rise 0.5s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
+@keyframes tick {
+  0%, 100% { transform: rotate(0deg); }
+  50% { transform: rotate(360deg); }
+}
+.clock-hand {
+  transform-origin: 12px 12px;
+  animation: tick 60s linear infinite;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
   *::after {
     animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }

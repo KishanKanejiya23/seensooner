@@ -3,31 +3,33 @@
 import { motion } from "motion/react";
 import { useRouter } from "next/navigation";
 import { useId, useState } from "react";
+import { PinIcon } from "@/components/Icons";
 
 type Mode = "now" | "planned";
 
 const MODES: { id: Mode; label: string; hint: string }[] = [
-  { id: "now", label: "Urgent care, right now", hint: "A&E, urgent treatment centres and minor injuries units" },
-  { id: "planned", label: "An operation or specialist", hint: "Hospital waiting lists, by specialty" },
+  { id: "now", label: "I need care today", hint: "A&E, urgent treatment centres, minor injuries" },
+  { id: "planned", label: "I'm waiting for an operation or specialist", hint: "Hospital waiting lists by specialty" },
 ];
 
 /**
- * One panel, two questions. The mode switch is the only thing that changes
- * the form: same place field, same button, so nothing has to be relearnt.
- * It is a plain GET form, so it works before (and without) JavaScript.
+ * One box, two questions. The mode switch is the only thing that changes the
+ * form: same place field, same button. A plain GET form, so it works before
+ * (and without) JavaScript; "use my location" is the only scripted part.
  */
 export function SearchPanel({
   specialties,
   mode: initialMode = "now",
   q = "",
   s = "orthopaedics",
-  compact = false,
+  fixedMode = false,
 }: {
   specialties: { slug: string; name: string }[];
   mode?: Mode;
   q?: string;
   s?: string;
-  compact?: boolean;
+  /** On /now and /planned the page already answers "which question", so hide the switch. */
+  fixedMode?: boolean;
 }) {
   const [mode, setMode] = useState<Mode>(initialMode);
   const [locating, setLocating] = useState(false);
@@ -59,41 +61,45 @@ export function SearchPanel({
   }
 
   return (
-    <div className={`rounded-xl border border-line bg-card ${compact ? "" : "shadow-lift"}`}>
-      <div role="radiogroup" aria-label="What are you looking for?" className="grid grid-cols-2 border-b border-line p-1">
-        {MODES.map((m) => {
-          const on = mode === m.id;
-          return (
-            <button
-              key={m.id}
-              type="button"
-              role="radio"
-              aria-checked={on}
-              onClick={() => setMode(m.id)}
-              className={`relative min-h-12 rounded-lg px-3 py-3 text-left transition-colors ${on ? "text-act-ink" : "text-ink-2 hover:text-ink"}`}
-            >
-              {on && (
-                <motion.span
-                  layoutId={`${id}-pill`}
-                  className="absolute inset-0 rounded-lg bg-act"
-                  transition={{ type: "spring", stiffness: 520, damping: 40 }}
-                />
-              )}
-              <span className="relative block text-[16px] font-bold leading-tight">{m.label}</span>
-              {!compact && (
-                <span className={`relative mt-1 hidden text-[14px] leading-snug sm:block ${on ? "opacity-90" : "text-ink-3"}`}>
-                  {m.hint}
+    <div className="border-t-4 border-brand-700 bg-well">
+      {!fixedMode && (
+        <div role="radiogroup" aria-label="What do you need?" className="grid gap-2 px-4 pt-4 sm:grid-cols-2 sm:px-6 sm:pt-6">
+          {MODES.map((m) => {
+            const on = mode === m.id;
+            return (
+              <button
+                key={m.id}
+                type="button"
+                role="radio"
+                aria-checked={on}
+                onClick={() => setMode(m.id)}
+                className={`relative min-h-16 rounded border-2 px-4 py-3 text-left ${on ? "border-brand-700 text-white" : "border-line-strong bg-white text-ink hover:border-brand-700"}`}
+              >
+                {on && (
+                  <motion.span layoutId={`${id}-on`} className="absolute inset-0 rounded-[2px] bg-brand-700" transition={{ type: "spring", stiffness: 500, damping: 40 }} />
+                )}
+                <span className="relative flex items-start gap-3">
+                  <span
+                    aria-hidden="true"
+                    className={`mt-1 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 ${on ? "border-saffron" : "border-line-strong"}`}
+                  >
+                    {on && <span className="h-2.5 w-2.5 rounded-full bg-saffron" />}
+                  </span>
+                  <span>
+                    <span className="block text-[18px] font-bold leading-snug">{m.label}</span>
+                    <span className={`mt-1 block text-[16px] leading-snug ${on ? "text-brand-100" : "text-ink-3"}`}>{m.hint}</span>
+                  </span>
                 </span>
-              )}
-            </button>
-          );
-        })}
-      </div>
+              </button>
+            );
+          })}
+        </div>
+      )}
 
       <form action={`/${mode}`} method="get" className="flex flex-col gap-4 p-4 sm:p-6 md:flex-row md:items-end">
         <div className="min-w-0 flex-[1.2]">
-          <label htmlFor={`${id}-q`} className="caps block">
-            Where are you?
+          <label htmlFor={`${id}-q`} className="block text-[18px] font-bold">
+            Your postcode or town
           </label>
           <input
             id={`${id}-q`}
@@ -101,14 +107,14 @@ export function SearchPanel({
             defaultValue={q}
             required
             autoComplete="postal-code"
-            placeholder="Postcode or town, e.g. LS1 4AP"
-            className="mt-2 h-14 w-full rounded border-2 border-line-strong bg-card px-4 text-[18px] text-ink placeholder:text-ink-3 focus:border-act focus:outline-none"
+            placeholder="For example, B71 4HJ or Leeds"
+            className="mt-2 h-14 w-full rounded border-2 border-ink bg-white px-4 text-[18px] text-ink placeholder:text-ink-3 focus:outline-none focus:ring-4 focus:ring-saffron"
           />
         </div>
 
         {mode === "planned" && (
-          <motion.div initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} className="min-w-0 flex-1">
-            <label htmlFor={`${id}-s`} className="caps block">
+          <div className="min-w-0 flex-1">
+            <label htmlFor={`${id}-s`} className="block text-[18px] font-bold">
               Specialty
             </label>
             <select
@@ -116,7 +122,7 @@ export function SearchPanel({
               name="s"
               value={spec}
               onChange={(e) => setSpec(e.target.value)}
-              className="mt-2 h-14 w-full rounded border-2 border-line-strong bg-card px-3 text-[18px] text-ink focus:border-act focus:outline-none"
+              className="mt-2 h-14 w-full rounded border-2 border-ink bg-white px-3 text-[18px] text-ink focus:outline-none focus:ring-4 focus:ring-saffron"
             >
               {specialties.map((x) => (
                 <option key={x.slug} value={x.slug}>
@@ -124,34 +130,22 @@ export function SearchPanel({
                 </option>
               ))}
             </select>
-          </motion.div>
+          </div>
         )}
 
-        <button
-          type="submit"
-          className="h-14 shrink-0 rounded bg-ink px-8 text-[18px] font-bold text-paper transition-transform hover:bg-ink-2 active:scale-[0.98]"
-        >
-          {mode === "now" ? "Show waits" : "Compare hospitals"}
+        <button type="submit" className="h-14 shrink-0 rounded bg-brand-700 px-8 text-[18px] font-bold text-white hover:bg-brand-900 active:translate-y-px">
+          {mode === "now" ? "Show waiting times" : "Compare hospitals"}
         </button>
       </form>
 
-      <div className="flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-line px-4 py-3 text-[16px] sm:px-6">
-        <button
-          type="button"
-          onClick={locate}
-          disabled={locating}
-          className="inline-flex min-h-12 items-center gap-2 font-bold text-act hover:underline disabled:opacity-60"
-        >
-          <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="2.2">
-            <circle cx="12" cy="12" r="7" />
-            <path d="M12 2v3M12 19v3M2 12h3M19 12h3" strokeLinecap="round" />
-            <circle cx="12" cy="12" r="2" fill="currentColor" />
-          </svg>
-          {locating ? "Finding you…" : "Use my location"}
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 px-4 pb-5 text-[16px] sm:px-6">
+        <button type="button" onClick={locate} disabled={locating} className="inline-flex min-h-12 items-center gap-2 font-bold text-brand-600 underline underline-offset-4 hover:text-brand-900 disabled:opacity-60">
+          <PinIcon className="h-5 w-5" />
+          {locating ? "Finding where you are…" : "Use my location instead"}
         </button>
-        <span className="text-[14px] text-ink-3">Used once to sort results. Never stored.</span>
+        <span className="text-ink-3">Used once to sort the results. Never stored.</span>
         {geoError && (
-          <p role="alert" className="w-full text-[16px] text-long-ink">
+          <p role="alert" className="w-full font-bold text-long-ink">
             {geoError}
           </p>
         )}

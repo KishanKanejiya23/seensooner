@@ -38,12 +38,17 @@ Free, 7 miles away, it was **16 weeks**. Across England the medians ran from 5.1
 | **Specialty and hospital pages** | 527 static pages: national rankings by region, and each hospital's waits by specialty | Same | Monthly |
 | **Right to choose** | What the law says, how to ask your GP, and a message you can copy | NHS Constitution and Choice Framework | Static |
 | **Where to go** | 999, A&E, urgent treatment centre, NHS 111, pharmacy or GP | NHS guidance | Static |
+| **Search** `/search` | One box for a postcode, a town or part of a hospital's name | All of the above | Live |
 
-| Planned care near you | Live waits | A hospital's own page | Phone |
+![Home page: photo banner with the headline panel, and the two-question search box overlapping it](docs/screenshots/home.png)
+
+| Planned care near you | Live waits, one block per hospital | A hospital's own page | Phone |
 | --- | --- | --- | --- |
-| ![Orthopaedic waits within 25 miles of N12 8NP, fastest first, with median bars, 92nd-percentile whiskers and 12-month sparklines](docs/screenshots/planned.png) | ![Live urgent care waits around Plymouth sorted by shortest wait, each as a ticket with the trust's own definition and update time](docs/screenshots/live.png) | ![Royal Free London waits by specialty, with rank in England and change against a year ago](docs/screenshots/hospital.png) | <img src="docs/screenshots/mobile.png" width="200" alt="Live A&E waits in Belfast on a phone"> |
+| ![Orthopaedic waits within 25 miles of N12 8NP, quickest first, with median bars, 92nd-percentile whiskers and 12-month sparklines](docs/screenshots/planned.png) | ![Live urgent care waits around Plymouth sorted by shortest wait, one block per hospital with each department's wait and update time](docs/screenshots/live.png) | ![Royal Free London waits by specialty, with rank in England and change against a year ago](docs/screenshots/hospital.png) | <img src="docs/screenshots/mobile.png" width="200" alt="Live A&E waits in Belfast on a phone"> |
 
-![Home page: the live "shortest waits now" departures board beside the headline](docs/screenshots/home.png)
+| The gap most people are never told about | Our aim |
+| --- | --- |
+| ![The same orthopaedic care takes 5.1 weeks at one London hospital and 16 at another 7 miles away](docs/screenshots/gap.png) | ![Aneurin Bevan's quote beside the project's aim: nobody should have to wait in the dark](docs/screenshots/mission.png) |
 
 ## How it works
 
@@ -66,8 +71,8 @@ Free, 7 miles away, it was **16 weeks**. Across England the medians ran from 5.1
   site lists the source as unreachable. Every result shows the trust's own definition ("longest
   wait to be seen", "median time to a clinician") and its own update time, and is flagged "may be out of
   date" once the source is two hours old.
-- **Banded sources stay honest.** When a trust only says "more than 2 hours", the site shows
-  `2 hr+`, not a precise-looking `2 hr 0 min`.
+- **Banded sources stay honest.** When a trust only says "more than 2 hours", the site says
+  exactly that, not a precise-looking "2 hours 0 minutes".
 - **Low load on NHS sites.** One request per source per five minutes, however busy SeenSooner gets.
 - **The planned-care maths.** The CSV gives counts in 105 weekly buckets per provider and
   specialty. The ingest interpolates the median and 92nd percentile inside the bucket, drops
@@ -78,15 +83,39 @@ Free, 7 miles away, it was **16 weeks**. Across England the medians ran from 5.1
 
 ## Design decisions
 
-- **Atkinson Hyperlegible (Next + Mono)**, drawn by the Braille Institute for low-vision readers.
+- **Built like a public-service website, not a startup landing page.** The structure follows NHS
+  trust sites (Sandwell and West Birmingham's live A&E page in particular): a utility bar with
+  999 first, a search-first header, photo banners with a titled panel, "You are here"
+  breadcrumbs, a section sidebar with an emergency box, one block per hospital with each
+  department's wait, a "correct as of" timestamp with a refresh button, a values strip and a
+  heavy footer.
+- **Not NHS-branded.** It deliberately avoids NHS blue, Frutiger and the NHS logo (and the
+  MIT-licensed NHS design system), because an independent site must never read as official. Its own
+  identity is civic teal with a saffron marker bar and a magenta emergency box. The mark is a
+  take-a-number queue ticket.
+- **Atkinson Hyperlegible Next**, drawn by the Braille Institute for low-vision readers, at 18px.
   People check waits when they're anxious, unwell or older, often on a phone in a corridor.
-  Every number is in the mono cut so columns line up.
-- **Number + bar length + colour**, never colour alone. Text colours are checked at 4.5:1 or more,
-  and the search, sort and action controls are at least 48 px tall.
-- **The 999 strip comes first on every page.** The site must never slow down an emergency.
-- **Not NHS-branded.** The open-source NHS design system is MIT-licensed, but its look would make an
-  independent site read as official. So SeenSooner has its own identity: the mark is a take-a-number
-  queue ticket, and the home board is a railway departures board.
+- **Number, words and colour together.** Every wait is written in full ("1 hour 10 minutes",
+  "more than 2 hours") with a "shorter / middling / longer" label, never colour alone. Text
+  colours are checked at 4.5:1 or more, and the search, sort and action controls are at least
+  48px tall.
+- **Real photography** (Unsplash) in the banners, served as 800px or 1600px WebP, with a teal
+  wash so white text always passes contrast.
+- **Words with a purpose.** "Our aim" carries one verified Aneurin Bevan quote from *In Place of
+  Fear* (1952). A popular "Illness is neither an indulgence…" line was left out because its
+  attribution is disputed.
+
+## SEO and quality
+
+- Lighthouse on the production build (simulated mobile, slow 4G): **SEO 100, accessibility 100,
+  best practices 100, performance 93-97, CLS 0** on the home, live, specialty, hospital and guide pages.
+- Unique titles, descriptions and canonicals on every page; `en-GB`; sitemap of 530+ URLs; robots;
+  web manifest; search results are `noindex, follow`.
+- Structured data: Organization, WebSite with SearchAction, BreadcrumbList on every page,
+  `Hospital` / `MedicalOrganization` with address and geo on 506 hospital pages, `Dataset` on
+  specialty pages, `FAQPage` on the guides, `AboutPage`.
+- A generated 1200×630 share image for the site and for every hospital and specialty, plus an
+  Apple touch icon.
 
 ## Run it
 

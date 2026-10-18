@@ -1,39 +1,24 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import { HospitalFilter } from "@/components/HospitalFilter";
+import { PageBanner, PageLayout } from "@/components/Shell";
 import { ALL_PROVIDERS, RTT_PERIOD } from "@/lib/rtt";
 
 export const metadata: Metadata = {
-  title: "Every hospital and provider in England",
-  description: `Waiting times for 500+ NHS trusts and independent providers in England, ${RTT_PERIOD}.`,
+  title: "Every NHS hospital and provider in England",
+  description: `Waiting times for ${ALL_PROVIDERS.length} NHS trusts and independent providers in England, by specialty. NHS England data for ${RTT_PERIOD}.`,
   alternates: { canonical: "/hospitals" },
 };
 
 export default function Hospitals() {
-  const regions = [...new Set(ALL_PROVIDERS.map((p) => p.region ?? "Other"))].sort();
+  const providers = ALL_PROVIDERS.map((p) => ({ code: p.code, slug: p.slug, name: p.name, nhs: p.nhs, town: p.town, region: p.region ?? "Other" })).sort((a, b) =>
+    a.name.localeCompare(b.name),
+  );
   return (
-    <div className="mx-auto max-w-6xl px-4 pt-10 sm:px-6">
-      <h1 className="text-[30px] font-bold tracking-[-0.02em] sm:text-[48px]">Every hospital</h1>
-      <p className="mt-4 max-w-2xl text-[20px] text-ink-2">
-        {ALL_PROVIDERS.length} NHS trusts and independent providers reported planned-care waits for {RTT_PERIOD}.
-      </p>
-      {regions.map((region) => {
-        const list = ALL_PROVIDERS.filter((p) => (p.region ?? "Other") === region).sort((a, b) => a.name.localeCompare(b.name));
-        return (
-          <section key={region} className="mt-12" aria-labelledby={`r-${region}`}>
-            <h2 id={`r-${region}`} className="caps">{region} · {list.length}</h2>
-            <ul className="mt-4 grid gap-x-8 sm:grid-cols-2 lg:grid-cols-3">
-              {list.map((p) => (
-                <li key={p.code} className="border-b border-line">
-                  <Link href={`/hospital/${p.slug}`} className="flex items-baseline justify-between gap-3 py-3 hover:underline">
-                    <span>{p.name}</span>
-                    {!p.nhs && <span className="shrink-0 text-[12px] font-bold text-ink-3">IND</span>}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </section>
-        );
-      })}
-    </div>
+    <>
+      <PageBanner photo="clinic" kicker={`${ALL_PROVIDERS.length} providers in England`} title="Every hospital" lede={`NHS trusts and independent hospitals that reported planned-care waits for ${RTT_PERIOD}.`} />
+      <PageLayout trail={[{ label: "Hospitals" }]} current="/hospitals">
+        <HospitalFilter providers={providers} />
+      </PageLayout>
+    </>
   );
 }

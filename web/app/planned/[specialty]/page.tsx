@@ -1,8 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { JsonLd } from "@/components/JsonLd";
 import { PlannedLegend, PlannedList, axisMax } from "@/components/PlannedList";
-import { RTT_PERIOD, SPECIALTIES, getSpecialty, national, spread, weeks } from "@/lib/rtt";
+import { PageBanner, PageLayout } from "@/components/Shell";
+import { RTT_PERIOD, RTT_SOURCE, SPECIALTIES, getSpecialty, national, spread, weeks } from "@/lib/rtt";
+import { SITE_URL } from "@/lib/site";
 
 export const dynamicParams = false;
 export function generateStaticParams() {
@@ -13,11 +16,9 @@ export async function generateMetadata({ params }: PageProps<"/planned/[specialt
   const spec = getSpecialty((await params).specialty);
   if (!spec) return {};
   const sp = spread(spec.code);
-  return {
-    title: `${spec.name} waiting times at every hospital in England`,
-    description: `${spec.blurb}. Median waits from ${sp ? weeks(sp.fastest.median) : "?"} to ${sp ? weeks(sp.slowest.median) : "?"} across ${sp?.count ?? 0} providers, ${RTT_PERIOD}.`,
-    alternates: { canonical: `/planned/${spec.slug}` },
-  };
+  const title = `${spec.name} waiting times at every hospital in England`;
+  const description = `${spec.blurb}. Median NHS waits from ${sp ? weeks(sp.fastest.median) : "?"} to ${sp ? weeks(sp.slowest.median) : "?"} across ${sp?.count ?? 0} providers, ${RTT_PERIOD}. Compare and choose.`;
+  return { title, description, alternates: { canonical: `/planned/${spec.slug}` }, openGraph: { title, description, url: `/planned/${spec.slug}` } };
 }
 
 export default async function SpecialtyPage({ params }: PageProps<"/planned/[specialty]">) {
@@ -26,69 +27,88 @@ export default async function SpecialtyPage({ params }: PageProps<"/planned/[spe
   const all = national(spec.code);
   const sp = spread(spec.code);
   const regions = [...new Set(all.map((r) => r.provider.region ?? "Other"))].sort();
+  const top = all.slice(0, 20);
 
   return (
-    <div className="mx-auto max-w-6xl px-4 pt-10 sm:px-6">
-      <nav aria-label="Breadcrumb" className="text-[16px] text-ink-3">
-        <Link href="/planned" className="hover:underline">Planned care</Link> <span aria-hidden="true">/</span> {spec.name}
-      </nav>
-      <h1 className="mt-3 text-[30px] font-bold leading-tight tracking-[-0.02em] sm:text-[48px]">{spec.name} waiting times in England</h1>
-      <p className="mt-4 max-w-2xl text-[20px] text-ink-2">{spec.blurb}.</p>
+    <>
+      <PageBanner photo="red-chairs" kicker={`England, ${RTT_PERIOD}`} title={`${spec.name} waiting times`} lede={`${spec.blurb}. Every hospital in England that reported waits, quickest first.`} />
+      <PageLayout trail={[{ href: "/planned", label: "Planned care" }, { label: spec.name }]} current="/planned">
+        {sp && (
+          <dl className="grid gap-px bg-line sm:grid-cols-3">
+            {[
+              { k: "Quickest hospital", v: weeks(sp.fastest.median), d: sp.fastest.provider.name },
+              { k: "Typical hospital", v: weeks(sp.typical), d: `Middle of ${sp.count} providers` },
+              { k: "Slowest hospital", v: weeks(sp.slowest.median), d: sp.slowest.provider.name },
+            ].map((x, i) => (
+              <div key={x.k} className={`p-6 ${i === 0 ? "bg-brand-900 text-white" : "bg-well"}`}>
+                <dt className={`text-[16px] font-bold ${i === 0 ? "text-saffron" : "text-ink-2"}`}>{x.k}</dt>
+                <dd className="num mt-2 text-[30px] font-bold">{x.v}</dd>
+                <dd className={`text-[16px] ${i === 0 ? "text-brand-100" : "text-ink-2"}`}>{x.d}</dd>
+              </div>
+            ))}
+          </dl>
+        )}
+        <p className="mt-4 text-[16px] text-ink-2">Median wait. &ldquo;Quickest&rdquo; and &ldquo;slowest&rdquo; count hospitals with at least 200 people waiting.</p>
 
-      {sp && (
-        <dl className="mt-10 grid gap-px overflow-hidden rounded-xl border border-line bg-line sm:grid-cols-3">
-          <div className="bg-paper p-6">
-            <dt className="caps">Fastest (200+ waiting)</dt>
-            <dd className="num mt-2 text-[30px] font-bold">{weeks(sp.fastest.median)}</dd>
-            <dd className="text-[16px] text-ink-2">{sp.fastest.provider.name}</dd>
+        <p className="mt-8">
+          <Link href={`/planned?s=${spec.slug}`} className="inline-flex min-h-12 items-center rounded bg-brand-700 px-6 text-[18px] font-bold text-white hover:bg-brand-900">
+            Find the quickest near me
+          </Link>
+        </p>
+
+        <section className="mt-14" aria-labelledby="fastest">
+          <h2 id="fastest" className="text-[24px] sm:text-[30px]">
+            The 20 quickest in England
+          </h2>
+          <div className="mt-4">
+            <PlannedLegend max={axisMax(top)} />
           </div>
-          <div className="bg-paper p-6">
-            <dt className="caps">Typical provider</dt>
-            <dd className="num mt-2 text-[30px] font-bold">{weeks(sp.typical)}</dd>
-            <dd className="text-[16px] text-ink-2">Median of {sp.count} providers</dd>
+          <div className="mt-4">
+            <PlannedList rows={top} showDistance={false} specialtyName={spec.name} />
           </div>
-          <div className="bg-paper p-6">
-            <dt className="caps">Slowest (200+ waiting)</dt>
-            <dd className="num mt-2 text-[30px] font-bold">{weeks(sp.slowest.median)}</dd>
-            <dd className="text-[16px] text-ink-2">{sp.slowest.provider.name}</dd>
+        </section>
+
+        <section className="mt-16" aria-labelledby="regions">
+          <h2 id="regions" className="text-[24px] sm:text-[30px]">
+            Every hospital, by region
+          </h2>
+          <p className="mt-2 text-ink-2">
+            {all.length} providers reported {spec.name.toLowerCase()} waits for {RTT_PERIOD}.
+          </p>
+          <div className="mt-6 border-t border-line">
+            {regions.map((region) => {
+              const rows = all.filter((r) => (r.provider.region ?? "Other") === region);
+              return (
+                <details key={region} className="border-b border-line">
+                  <summary className="flex min-h-14 items-center justify-between gap-4 py-4 text-[20px] font-bold hover:text-brand-600">
+                    <span>
+                      {region} <span className="num font-normal text-ink-3">({rows.length})</span>
+                    </span>
+                    <span className="chev text-[16px] text-ink-3 transition-transform" aria-hidden="true">▼</span>
+                  </summary>
+                  <div className="pb-8">
+                    <PlannedList rows={rows} showDistance={false} specialtyName={spec.name} />
+                  </div>
+                </details>
+              );
+            })}
           </div>
-        </dl>
-      )}
-
-      <p className="mt-10">
-        <Link href={`/planned?s=${spec.slug}`} className="inline-flex min-h-12 items-center rounded bg-ink px-6 font-bold text-paper hover:bg-ink-2">
-          Sort these by distance from me
-        </Link>
-      </p>
-
-      <section className="mt-12" aria-labelledby="fastest">
-        <h2 id="fastest" className="text-[24px] font-bold">Fastest 20 in England</h2>
-        <div className="mt-4"><PlannedLegend max={axisMax(all.slice(0, 20))} /></div>
-        <div className="mt-4"><PlannedList rows={all.slice(0, 20)} showDistance={false} specialtyName={spec.name} /></div>
-      </section>
-
-      <section className="mt-16" aria-labelledby="regions">
-        <h2 id="regions" className="text-[24px] font-bold">Every provider, by region</h2>
-        <p className="mt-2 text-ink-2">{all.length} providers reported {spec.name.toLowerCase()} waits for {RTT_PERIOD}.</p>
-        <div className="mt-6 divide-y divide-line border-y border-line">
-          {regions.map((region) => {
-            const rows = all.filter((r) => (r.provider.region ?? "Other") === region);
-            return (
-              <details key={region} className="group">
-                <summary className="flex min-h-14 items-center justify-between gap-4 py-4 text-[18px] font-bold hover:underline">
-                  <span>
-                    {region} <span className="num font-normal text-ink-3">({rows.length})</span>
-                  </span>
-                  <span className="chev text-ink-3 transition-transform" aria-hidden="true">▾</span>
-                </summary>
-                <div className="pb-6">
-                  <PlannedList rows={rows} showDistance={false} specialtyName={spec.name} />
-                </div>
-              </details>
-            );
-          })}
-        </div>
-      </section>
-    </div>
+        </section>
+      </PageLayout>
+      <JsonLd
+        data={{
+          "@context": "https://schema.org",
+          "@type": "Dataset",
+          name: `${spec.name} waiting times by hospital in England, ${RTT_PERIOD}`,
+          description: `Median, 92nd percentile and share within 18 weeks for ${spec.name.toLowerCase()} referral-to-treatment waits at ${all.length} providers in England.`,
+          url: `${SITE_URL}/planned/${spec.slug}`,
+          isBasedOn: RTT_SOURCE.url,
+          license: "https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/",
+          spatialCoverage: { "@type": "Place", name: "England" },
+          temporalCoverage: RTT_PERIOD,
+          creator: { "@id": `${SITE_URL}/#org` },
+        }}
+      />
+    </>
   );
 }
