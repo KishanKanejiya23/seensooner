@@ -1,0 +1,35 @@
+# Production on kishan-server. Built by deploy/deploy.sh from staged artifacts.
+# One stateless container on loopback; Cloudflare Tunnel connects to 127.0.0.1:8100.
+# No database and no secrets: it reads public NHS pages and a baked JSON file.
+name: seensooner
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile.web
+    image: seensooner-web:latest
+    container_name: seensooner-web
+    restart: unless-stopped
+    environment:
+      SITE_URL: ${SITE_URL:-https://seensooner.kishankanejiiya.tech}
+      NODE_OPTIONS: --max-old-space-size=192
+    ports:
+      - "127.0.0.1:8100:3000"
+    read_only: true
+    tmpfs:
+      - /tmp:size=16m
+      - /app/.next/cache:size=64m,uid=1000,gid=1000
+    security_opt: ["no-new-privileges:true"]
+    cap_drop: [ALL]
+    mem_limit: 320m
+    pids_limit: 256
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/icon.svg').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 4s
+      retries: 3
+      start_period: 15s
+    logging:
+      driver: json-file
+      options: { max-size: "5m", max-file: "2" }

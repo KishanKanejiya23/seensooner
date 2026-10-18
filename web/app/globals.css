@@ -1,0 +1,181 @@
+@import "tailwindcss";
+
+/*
+ * SeenSooner. A public-information tool, so the references are public
+ * wayfinding rather than apps: hospital corridor signs, railway departure
+ * boards, the take-a-number ticket. Calm paper, ink type, numbers that line up.
+ *
+ * Type: Atkinson Hyperlegible Next + Mono (Braille Institute). Chosen for the
+ * reader, not the look: people checking a wait are often anxious, older, or
+ * reading on a phone in a corridor. Mono is for every number so columns align.
+ *
+ * Colour: ink on warm paper. One interactive colour, "signal teal". Wait
+ * lengths get their own quiet ramp (quick / middling / long) and always carry
+ * a number and a bar length too, never colour alone. Emergency red is used
+ * for the 999 strip and nothing else.
+ *
+ * Scales (nothing outside them):
+ *   space   4 8 12 16 24 32 48 64 96 128
+ *   type    12 14 16 18 20 24 30 36 48 64 80
+ *   radius  4 (inputs, buttons, chips) / 12 (panels) / 999 (pills, dots)
+ *   shadow  --lift (search panel only)
+ */
+:root {
+  --paper: #fbfaf6;
+  --paper-2: #f2efe7;      /* wells, alternate rows */
+  --card: #ffffff;
+  --ink: #15171c;          /* 17.6:1 on paper */
+  --ink-2: #464a54;        /* 8.6:1 secondary */
+  --ink-3: #5f6470;        /* 5.8:1 labels */
+  --line: #e4e0d6;         /* decorative hairlines */
+  --line-strong: #858a95;  /* input edges, 3.4:1 */
+  --act: #0d6b62;          /* signal teal: links, buttons, focus (6.3:1) */
+  --act-ink: #ffffff;
+  --act-soft: #e3f1ee;
+  --quick: #2f8a5b;        /* wait ramp, bars only */
+  --mid: #c98a1b;
+  --long: #b9502f;
+  --quick-ink: #1d6a42;    /* text versions of the ramp, 6.3:1 / 6.0:1 */
+  --long-ink: #9a3a1d;
+  --mid-ink: #845a0c;
+  --quick-soft: #e4f2ea;
+  --mid-soft: #f8eedb;
+  --long-soft: #f7e6df;
+  --sos: #b3261e;          /* 999 strip only (6.5:1 with white) */
+  --live: #1f8a4c;
+  --lift: 0 24px 48px -24px rgb(21 23 28 / 0.28), 0 2px 6px rgb(21 23 28 / 0.06);
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --paper: #121417;
+    --paper-2: #1a1d21;
+    --card: #181b1f;
+    --ink: #f1efea;
+    --ink-2: #c3c6cc;
+    --ink-3: #a3a8b1;
+    --line: #2a2e34;
+    --line-strong: #6f7580;
+    --act: #5fc4b6;
+    --act-ink: #0c1715;
+    --act-soft: #15302c;
+    --quick: #5fbf8a;
+    --mid: #e0ad4c;
+    --long: #e57e5c;
+    --quick-ink: #7fd3a4;
+    --long-ink: #f39b7d;
+    --mid-ink: #e8be6d;
+    --quick-soft: #16291f;
+    --mid-soft: #2e2615;
+    --long-soft: #33201a;
+    --sos: #c4332a;
+    --live: #4cc77f;
+    --lift: 0 24px 48px -24px rgb(0 0 0 / 0.8), 0 0 0 1px var(--line);
+    color-scheme: dark;
+  }
+}
+
+@theme inline {
+  --color-paper: var(--paper);
+  --color-paper-2: var(--paper-2);
+  --color-card: var(--card);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-ink-3: var(--ink-3);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-act: var(--act);
+  --color-act-ink: var(--act-ink);
+  --color-act-soft: var(--act-soft);
+  --color-quick: var(--quick);
+  --color-mid: var(--mid);
+  --color-long: var(--long);
+  --color-quick-ink: var(--quick-ink);
+  --color-mid-ink: var(--mid-ink);
+  --color-long-ink: var(--long-ink);
+  --color-quick-soft: var(--quick-soft);
+  --color-mid-soft: var(--mid-soft);
+  --color-long-soft: var(--long-soft);
+  --color-sos: var(--sos);
+  --color-live: var(--live);
+  --font-sans: var(--font-atkinson), -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono: var(--font-atkinson-mono), ui-monospace, "SF Mono", Menlo, monospace;
+  --shadow-lift: var(--lift);
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  font-family: var(--font-sans);
+  background: var(--paper);
+  color: var(--ink);
+  font-size: 18px;
+  line-height: 1.55;
+}
+
+:focus-visible {
+  outline: 3px solid var(--act);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+::selection {
+  background: var(--act-soft);
+}
+
+/* Tracked capitals: kickers and column labels, read letter by letter. */
+.caps {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+.num {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+
+/* Body links: coloured and underlined (they sit inside running text). */
+.prose-link {
+  color: var(--act);
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 3px;
+}
+.prose-link:hover {
+  text-decoration-thickness: 3px;
+}
+
+/* The ticket-stub perforation, used on the logo and the result "tickets". */
+.perf {
+  background-image: radial-gradient(circle, var(--line-strong) 1.2px, transparent 1.4px);
+  background-size: 8px 8px;
+  background-repeat: repeat-y;
+  background-position: center;
+}
+
+details > summary {
+  list-style: none;
+  cursor: pointer;
+}
+details > summary::-webkit-details-marker {
+  display: none;
+}
+details[open] .chev {
+  transform: rotate(180deg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
