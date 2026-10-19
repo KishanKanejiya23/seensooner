@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { CookieSettingsLink } from "./Analytics";
 import { CareIcon, HonestIcon, OpenIcon } from "@/components/Icons";
 import { Logo } from "@/components/Logo";
 import { SiteSearch } from "@/components/SiteHeader";
@@ -69,6 +70,7 @@ export function SiteFooter() {
                 <li><a className="underline underline-offset-4 hover:no-underline" href={ISSUES_URL}>Report a problem</a></li>
                 <li><a className="underline underline-offset-4 hover:no-underline" href={REPO_URL}>Source code on GitHub</a></li>
                 <li><Link className="underline underline-offset-4 hover:no-underline" href="/accessibility">Accessibility statement</Link></li>
+                <li><CookieSettingsLink className="underline underline-offset-4 hover:no-underline" /></li>
               </ul>
             </div>
           </div>

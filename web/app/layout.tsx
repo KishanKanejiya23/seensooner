@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Atkinson_Hyperlegible_Next } from "next/font/google";
+import { Analytics } from "@/components/Analytics";
 import { JsonLd } from "@/components/JsonLd";
 import { SiteFooter } from "@/components/SiteFooter";
 import { SiteHeader } from "@/components/SiteHeader";
@@ -82,6 +83,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             ],
           }}
         />
+        <Analytics />
       </body>
     </html>
   );

@@ -22,7 +22,7 @@ export default function About() {
           <p className="text-[20px]">
             SeenSooner puts public NHS waiting-time data in one place, so you can compare before you travel or before you&apos;re referred.
             It&apos;s independent: not part of, funded by or endorsed by the NHS. It&apos;s free, it has no adverts, and it doesn&apos;t
-            store anything about you.
+            store anything about you. If you allow it, Google Analytics counts visits; it never receives your postcode, location or searches.
           </p>
           <p>
             It was built by <a className="link" href={AUTHOR.url}>{AUTHOR.name}</a>, a software engineer in London, after watching friends and
